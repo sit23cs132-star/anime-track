@@ -58,6 +58,16 @@ export const WATCHLIST: WatchlistEntry[] = [
       'one piece',
     ],
   },
+  {
+    canonicalName: 'Dr. Stone Season 4',
+    searchTerms: [
+      'dr stone s4',
+      'dr. stone s4',
+      'dr. stone season 4',
+      'dr stone season 4',
+      'dr.stone s4',
+    ],
+  },
 ];
 
 /**
