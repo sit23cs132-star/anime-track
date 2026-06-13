@@ -17,7 +17,6 @@ interface ExpoPushMessage {
   priority?: 'high' | 'normal' | 'default';
   channelId?: string;
   badge?: number;
-  color?: string;
 }
 
 interface ExpoPushTicket {
@@ -65,7 +64,6 @@ export async function sendPushNotification(
       priority: 'high',
       channelId: 'anime-releases',
       badge: 1,
-      color: '#BB86FC',
     }));
 
     try {
