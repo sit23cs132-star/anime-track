@@ -24,28 +24,31 @@ export interface WatchlistEntry {
 
 export const WATCHLIST: WatchlistEntry[] = [
   {
-    canonicalName: 'Classroom of the Elite 4th Season',
+    canonicalName: 'Classroom of the Elite Season 4',
     searchTerms: [
+      'youkoso jitsuryoku shijou shugi no kyoushitsu e s4',  // SubsPlease format
+      'youkoso jitsuryoku shijou shugi no kyoushitsu e 4th', // alternate
       'classroom of the elite season 4',
-      'youkoso jitsuryoku shijou shugi no kyoushitsu e 4th season',
-      '2-nensei-hen',
+      'classroom of the elite s4',
       'classroom of the elite 4',
       'youkoso jitsuryoku 4th',
+      'youkoso jitsuryoku s4',
     ],
   },
   {
-    canonicalName: 'Re:ZERO -Starting Life in Another World- Season 4',
+    canonicalName: 'Re:ZERO -Starting Life in Another World-',
     searchTerms: [
-      're:zero kara hajimeru isekai seikatsu 4th season',
+      're zero kara hajimeru isekai seikatsu',  // SubsPlease format (matches any season/ep)
+      're:zero kara hajimeru isekai seikatsu',
       're:zero season 4',
       're:zero 4th season',
-      're:zero starting life in another world 4',
+      're:zero starting life in another world',
     ],
   },
   {
     canonicalName: 'Witch Hat Atelier',
     searchTerms: [
-      'tongari boushi no atelier',
+      'tongari boushi no atelier',  // SubsPlease uses Japanese name
       'witch hat atelier',
     ],
   },
