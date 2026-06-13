@@ -45,6 +45,13 @@ const watchlistData = [
     lastEpisode: 1100,
     lastNotified: '2024-01-15T10:30:00Z',
   },
+  {
+    canonicalName: 'Dr. Stone Season 4',
+    searchTerms: ['Dr. Stone S4', 'Dr. Stone Science Future'],
+    status: 'tracking' as const,
+    lastEpisode: 0,
+    lastNotified: null,
+  },
 ];
 
 interface WatchlistDashboardProps {
