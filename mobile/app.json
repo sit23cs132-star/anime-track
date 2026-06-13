@@ -11,12 +11,16 @@
       "resizeMode": "contain",
       "backgroundColor": "#0a0a12"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.animetracker.app",
       "infoPlist": {
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
       }
     },
     "android": {
@@ -53,11 +57,12 @@
         "origin": false
       },
       "eas": {
-        "projectId": ""
+        "projectId": "3b74b5ab-d2fd-49cb-ac61-562642a49d7d"
       }
     },
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "owner": "shabaz_shaik"
   }
 }
