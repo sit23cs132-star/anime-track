@@ -4,8 +4,8 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { StyleSheet, View } from 'react-native';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || "https://jokabcyvkuldryindwxh.supabase.co";
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impva2FiY3l2a3VsZHJ5aW5kd3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzMTc4MjIsImV4cCI6MjA5Njg5MzgyMn0.M5d88WilITNzrTuOLSKmaY7m7zG0qBa2vplRw1lTZPs";
 
 interface AppContextType {
   supabase: SupabaseClient;
