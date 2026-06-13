@@ -19,9 +19,11 @@ export async function registerDeviceToken(
   try {
     const { error } = await supabase
       .from('device_tokens')
-      .upsert({ token, platform }, { onConflict: 'token' });
+      .insert({ token, platform });
 
-    if (error) {
+    // Ignore unique-constraint violations — token already registered
+    const isDuplicate = error?.code === '23505';
+    if (error && !isDuplicate) {
       return { success: false, error: error.message };
     }
 
