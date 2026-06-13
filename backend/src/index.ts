@@ -73,6 +73,9 @@ async function processFeed(): Promise<CronResult> {
       try {
         const response = await sendPushNotification(deviceTokens, payload);
         console.log(`[Cron] Notification sent: ${response.successCount} success, ${response.failureCount} failed`);
+        if (response.errors.length > 0) {
+          console.warn(`[Cron] Push errors:`, response.errors);
+        }
 
         // Mark as notified
         await markEpisodeAsNotified(episodeKeyHash, entry.canonicalName);
