@@ -40,62 +40,6 @@ export function NotificationSetup() {
           <Text style={styles.settingsButtonText}>Open System Settings</Text>
         </TouchableOpacity>
       </View>
-
-      <View style={styles.logCard}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>RECENT ACTIVITY LOG</Text>
-        </View>
-        <View style={styles.logList}>
-          <LogEntry 
-            time="2 min ago"
-            type="success"
-            message="FCM Token registered with backend"
-            detail="Token: fGh7...kL92 (truncated)"
-          />
-          <LogEntry 
-            time="15 min ago"
-            type="info"
-            message="Permission granted"
-            detail="Notification access allowed"
-          />
-          <LogEntry 
-            time="1 hr ago"
-            type="info"
-            message="App started"
-            detail="Background listener registered"
-          />
-        </View>
-      </View>
-    </View>
-  );
-}
-
-function LogEntry({ time, type, message, detail }: {
-  time: string;
-  type: 'success' | 'info' | 'warning' | 'error';
-  message: string;
-  detail: string;
-}) {
-  const typeColors = {
-    success: '#00E5FF',
-    info: '#BB86FC',
-    warning: '#FFB300',
-    error: '#F50057',
-  };
-
-  return (
-    <View style={styles.logItem}>
-      <View style={[
-        styles.logDot,
-        { backgroundColor: typeColors[type] }
-      ]} />
-      <View style={styles.logContent}>
-        <View style={styles.logHeader}>
-          <Text style={styles.logMessage}>{message}</Text>
-          <Text style={styles.logTime}>{time}</Text>
-        </View>
-        <Text style={styles.logDetail}>{detail}</Text>
-      </View>
     </View>
   );
 }
@@ -113,13 +57,6 @@ const styles = StyleSheet.create({
     borderColor: '#1a1a2e',
     padding: 16,
     marginBottom: 16,
-  },
-  logCard: {
-    backgroundColor: '#11111a',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#1a1a2e',
-    padding: 16,
   },
   cardHeader: {
     marginBottom: 16,
@@ -161,43 +98,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#BB86FC',
-  },
-  logList: {
-    gap: 12,
-  },
-  logItem: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  logDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginTop: 2,
-    flexShrink: 0,
-  },
-  logContent: {
-    flex: 1,
-  },
-  logHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  logMessage: {
-    fontSize: 13,
-    color: '#ffffff',
-    fontWeight: '500',
-  },
-  logTime: {
-    fontSize: 11,
-    color: '#666680',
-    fontFamily: 'monospace',
-  },
-  logDetail: {
-    fontSize: 11,
-    color: '#666680',
-    fontFamily: 'monospace',
   },
 });

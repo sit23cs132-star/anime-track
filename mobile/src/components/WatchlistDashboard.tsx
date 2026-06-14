@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -16,16 +16,16 @@ interface WatchlistItemProps {
   lastNotified?: string | null;
 }
 
-const watchlistData = [
+const watchlistData: WatchlistItemProps[] = [
   {
-    canonicalName: 'Classroom of the Elite 4th Season',
+    canonicalName: 'Classroom of the Elite Season 4',
     searchTerms: ['Classroom of the Elite Season 4', 'Youkoso Jitsuryoku 4th', '2-nensei-hen'],
     status: 'tracking' as const,
     lastEpisode: 0,
     lastNotified: null,
   },
   {
-    canonicalName: 'Re:ZERO Season 4',
+    canonicalName: 'Re:ZERO -Starting Life in Another World-',
     searchTerms: ['Re:Zero 4th Season', 'Re:Zero kara Hajimeru 4'],
     status: 'tracking' as const,
     lastEpisode: 0,
@@ -59,14 +59,59 @@ interface WatchlistDashboardProps {
 }
 
 export function WatchlistDashboard({ supabase }: WatchlistDashboardProps) {
+  const [watchlist, setWatchlist] = useState(watchlistData);
+
+  useEffect(() => {
+    async function fetchLatestEpisodes() {
+      try {
+        const { data, error } = await supabase
+          .from('episodes_notified')
+          .select('title, episode_number, notified_at')
+          .order('notified_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching dynamic episodes:', error);
+          return;
+        }
+
+        if (data && data.length > 0) {
+          const updated = watchlistData.map(item => {
+            const match = data.find(
+              row => row.title?.toLowerCase() === item.canonicalName.toLowerCase()
+            );
+
+            if (match) {
+              const notifiedTime = new Date(match.notified_at).getTime();
+              const diffMs = new Date().getTime() - notifiedTime;
+              const isRecent = diffMs < 24 * 60 * 60 * 1000; // Released in the last 24 hours
+
+              return {
+                ...item,
+                lastEpisode: match.episode_number ?? item.lastEpisode,
+                lastNotified: match.notified_at ?? item.lastNotified,
+                status: isRecent ? ('new-episode' as const) : ('tracking' as const)
+              };
+            }
+            return item;
+          });
+          setWatchlist(updated);
+        }
+      } catch (err) {
+        console.error('Failed to update watchlist with database records:', err);
+      }
+    }
+
+    fetchLatestEpisodes();
+  }, [supabase]);
+
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>WATCHLIST</Text>
       <View style={styles.listHeader} />
-      {watchlistData.map((item, index) => (
+      {watchlist.map((item, index) => (
         <View key={item.canonicalName}>
           <WatchlistItem item={item} supabase={supabase} />
-          {index < watchlistData.length - 1 && <View style={styles.separator} />}
+          {index < watchlist.length - 1 && <View style={styles.separator} />}
         </View>
       ))}
       <View style={styles.listFooter} />

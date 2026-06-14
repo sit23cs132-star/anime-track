@@ -25,6 +25,7 @@ export interface EpisodeNotifiedRow {
   id: string;
   episode_key_hash: string;
   title: string;
+  episode_number: number;
   notified_at: string;
 }
 
@@ -56,10 +57,14 @@ export async function hasEpisodeBeenNotified(episodeKeyHash: string): Promise<bo
   return !!data;
 }
 
-export async function markEpisodeAsNotified(episodeKeyHash: string, title: string): Promise<void> {
+export async function markEpisodeAsNotified(episodeKeyHash: string, title: string, episodeNumber: number): Promise<void> {
   const { error } = await supabase
     .from('episodes_notified')
-    .insert({ episode_key_hash: episodeKeyHash, title });
+    .insert({ 
+      episode_key_hash: episodeKeyHash, 
+      title,
+      episode_number: episodeNumber 
+    });
 
   if (error) {
     console.error('Error marking episode as notified:', error);

@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS public.episodes_notified (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     episode_key_hash TEXT NOT NULL UNIQUE, -- Unique hash based on anime title + episode number
     title TEXT NOT NULL,
+    episode_number INTEGER, -- The released episode number
     notified_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -37,4 +38,10 @@ USING (true);
 CREATE POLICY "Allow service role full access to episodes" 
 ON public.episodes_notified FOR ALL 
 TO service_role 
+USING (true);
+
+-- Policy to allow public select (read) on episodes_notified for the mobile app
+CREATE POLICY "Allow public select on episodes_notified" 
+ON public.episodes_notified FOR SELECT 
+TO public 
 USING (true);

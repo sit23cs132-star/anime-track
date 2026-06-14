@@ -78,7 +78,7 @@ async function processFeed(): Promise<CronResult> {
         }
 
         // Mark as notified
-        await markEpisodeAsNotified(episodeKeyHash, entry.canonicalName);
+        await markEpisodeAsNotified(episodeKeyHash, entry.canonicalName, episodeNumber);
         result.notified++;
       } catch (error) {
         const errorMsg = `Failed to send notification for ${episodeKeyHash}: ${error}`;
