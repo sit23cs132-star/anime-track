@@ -13,7 +13,7 @@ interface WatchlistItemProps {
   searchTerms: string[];
   status: 'tracking' | 'new-episode' | 'idle';
   lastEpisode?: number;
-  lastNotified?: string;
+  lastNotified?: string | null;
 }
 
 const watchlistData = [
@@ -107,7 +107,7 @@ function WatchlistItem({ item, supabase }: { item: WatchlistItemProps; supabase:
             ]}>
               {statusLabels[item.status]}
             </Text>
-            {item.lastEpisode > 0 && (
+            {item.lastEpisode !== undefined && item.lastEpisode > 0 && (
               <>
                 <Text style={styles.divider}>|</Text>
                 <Text style={styles.episodeInfo}>
