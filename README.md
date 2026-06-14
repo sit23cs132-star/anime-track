@@ -21,7 +21,7 @@ A production-grade system for monitoring anime releases and sending real-time pu
 
 ### Backend (`/backend`)
 - **Node.js + TypeScript**
-- Triggered automatically every 15 minutes via **GitHub Actions** (`cron.yml`)
+- Triggered automatically every 5 minutes via **GitHub Actions** (`cron.yml`)
 - Fetches RSS feed from **SubsPlease** (`https://subsplease.org/rss/?r=1080`)
 - Matches releases against the watchlist using normalized title comparison
 - Delivers push notifications globally using **Expo's Push Notification Service** (`exp.host`)
@@ -77,7 +77,7 @@ GitHub Actions handles all automated RSS parsing and notification delivery. Add 
 - `SUPABASE_SERVICE_ROLE_KEY`: Service role API key (bypasses RLS for backend write access)
 - `RSS_FEED_URL`: RSS feed URL (defaults to `https://subsplease.org/rss/?r=1080`)
 
-Once secrets are set, the workflow at `.github/workflows/cron.yml` executes every 15 minutes, checking the feed, comparing titles, and dispatching pushes automatically! 🚀
+Once secrets are set, the workflow at `.github/workflows/cron.yml` executes every 5 minutes, checking the feed, comparing titles, and dispatching pushes automatically! 🚀
 
 ---
 
