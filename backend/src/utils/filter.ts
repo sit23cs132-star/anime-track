@@ -1,3 +1,5 @@
+import { AiringEpisode } from '../services/anilist';
+
 /**
  * Normalizes a string for comparison by:
  * - Converting to lowercase
@@ -26,11 +28,13 @@ export const WATCHLIST: WatchlistEntry[] = [
   {
     canonicalName: 'Classroom of the Elite Season 4',
     searchTerms: [
-      'youkoso jitsuryoku shijou shugi no kyoushitsu e s4',  // SubsPlease format
-      'youkoso jitsuryoku shijou shugi no kyoushitsu e 4th', // alternate
+      // AniList titles
       'classroom of the elite season 4',
+      'classroom of the elite 4th season',
+      'youkoso jitsuryoku shijou shugi no kyoushitsu e 4th season',
+      'youkoso jitsuryoku shijou shugi no kyoushitsu e s4',
+      // SubsPlease alternate
       'classroom of the elite s4',
-      'classroom of the elite 4',
       'youkoso jitsuryoku 4th',
       'youkoso jitsuryoku s4',
     ],
@@ -38,18 +42,22 @@ export const WATCHLIST: WatchlistEntry[] = [
   {
     canonicalName: 'Re:ZERO -Starting Life in Another World-',
     searchTerms: [
-      're zero kara hajimeru isekai seikatsu',  // SubsPlease format (matches any season/ep)
-      're:zero kara hajimeru isekai seikatsu',
-      're:zero season 4',
-      're:zero 4th season',
-      're:zero starting life in another world',
+      // AniList titles
+      're zero starting life in another world',
+      're zero kara hajimeru isekai seikatsu',
+      're zero season 3',
+      're zero season 4',
+      're zero 3rd season',
+      're zero 4th season',
     ],
   },
   {
     canonicalName: 'Witch Hat Atelier',
     searchTerms: [
-      'tongari boushi no atelier',  // SubsPlease uses Japanese name
+      // AniList English + Romaji
       'witch hat atelier',
+      'tongari boushi no atelier',
+      'tongari boshi no atelier',
     ],
   },
   {
@@ -61,11 +69,12 @@ export const WATCHLIST: WatchlistEntry[] = [
   {
     canonicalName: 'Dr. Stone Season 4',
     searchTerms: [
+      // AniList titles
+      'dr stone',
+      'dr stone science future',
+      'doctor stone',
       'dr stone s4',
-      'dr. stone s4',
-      'dr. stone season 4',
       'dr stone season 4',
-      'dr.stone s4',
     ],
   },
 ];
@@ -137,6 +146,39 @@ export function matchAgainstWatchlist(title: string): { entry: WatchlistEntry; e
       const normalizedTerm = normalizeString(term);
       if (normalizedTitle.includes(normalizedTerm)) {
         return { entry, episodeNumber };
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Matches an AniList airing episode against the watchlist.
+ * Checks all three title variants: English, Romaji, and Native.
+ * Returns the matched watchlist entry if found.
+ */
+export function matchAiringSchedule(
+  episode: AiringEpisode
+): { entry: WatchlistEntry } | null {
+  // Build list of all titles to check from AniList response
+  const titlesToCheck = [
+    episode.titleEnglish,
+    episode.titleRomaji,
+    episode.titleNative,
+  ].filter(Boolean);
+
+  for (const entry of WATCHLIST) {
+    for (const term of entry.searchTerms) {
+      const normalizedTerm = normalizeString(term);
+      for (const title of titlesToCheck) {
+        const normalizedTitle = normalizeString(title);
+        if (normalizedTitle.includes(normalizedTerm)) {
+          console.log(
+            `[Filter] Matched "${entry.canonicalName}" via AniList title "${title}" using search term "${term}"`
+          );
+          return { entry };
+        }
       }
     }
   }
