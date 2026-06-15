@@ -1,10 +1,10 @@
 import 'dotenv/config';
 import { fetchAiringSchedule } from './services/anilist';
 import { matchAiringSchedule, generateEpisodeKeyHash } from './utils/filter';
-import { 
-  getActiveDeviceTokens, 
-  hasEpisodeBeenNotified, 
-  markEpisodeAsNotified 
+import {
+  getActiveDeviceTokens,
+  hasEpisodeBeenNotified,
+  markEpisodeAsNotified
 } from './services/supabase';
 import { sendPushNotification } from './services/firebase';
 
@@ -24,7 +24,7 @@ async function processFeed(): Promise<CronResult> {
   };
 
   console.log('[Cron] Starting AniList airing schedule check...');
-  
+
   try {
     // Fetch episodes that aired in the last 15 minutes (UTC)
     // 15 minutes ensures we never miss episodes even if GitHub Actions fires slightly late
@@ -48,7 +48,7 @@ async function processFeed(): Promise<CronResult> {
 
     for (const episode of airingEpisodes) {
       const match = matchAiringSchedule(episode);
-      
+
       if (!match) {
         console.log(
           `[Cron] No watchlist match for: "${episode.titleEnglish || episode.titleRomaji}" Ep ${episode.episode}`
@@ -129,13 +129,13 @@ export default async function handler(req: any, res: any) {
   // Optional: Verify cron secret
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
   const expectedSecret = process.env.CRON_SECRET;
-  
+
   if (expectedSecret && cronSecret !== expectedSecret) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
   const result = await processFeed();
-  
+
   return res.status(200).json({
     success: true,
     timestamp: new Date().toISOString(),
