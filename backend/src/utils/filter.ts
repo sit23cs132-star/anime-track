@@ -37,6 +37,7 @@ export const WATCHLIST: WatchlistEntry[] = [
       'classroom of the elite s4',
       'youkoso jitsuryoku 4th',
       'youkoso jitsuryoku s4',
+      'classroom of the elite 4',
     ],
   },
   {
@@ -49,6 +50,7 @@ export const WATCHLIST: WatchlistEntry[] = [
       're zero season 4',
       're zero 3rd season',
       're zero 4th season',
+      're zero',
     ],
   },
   {
@@ -105,7 +107,7 @@ export function extractEpisodeNumber(title: string): number | null {
     /ep\s*(\d+)/i,
     /#(\d+)/,
     /第(\d+)話/,
-    /(\d+)\s*$/,
+    /(?<!season\s+|s|v)(\d+)\s*$/i,
     /^\s*(\d+)\s*[-–:]/,
   ];
 
@@ -119,8 +121,8 @@ export function extractEpisodeNumber(title: string): number | null {
     }
   }
 
-  // Fallback: look for any standalone number
-  const fallbackMatch = title.match(/\b(\d{1,4})\b/);
+  // Fallback: look for any standalone number not preceded by season keywords
+  const fallbackMatch = title.match(/(?<!season\s+|s|v)\b(\d{1,4})\b/i);
   if (fallbackMatch) {
     const num = parseInt(fallbackMatch[1], 10);
     if (num > 0 && num < 5000) return num;

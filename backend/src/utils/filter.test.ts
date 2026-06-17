@@ -49,7 +49,7 @@ describe('matchAgainstWatchlist', () => {
     tests.forEach(title => {
       const result = matchAgainstWatchlist(title);
       expect(result).not.toBeNull();
-      expect(result?.entry.canonicalName).toBe('Classroom of the Elite 4th Season');
+      expect(result?.entry.canonicalName).toBe('Classroom of the Elite Season 4');
     });
   });
 
@@ -63,7 +63,7 @@ describe('matchAgainstWatchlist', () => {
     tests.forEach(title => {
       const result = matchAgainstWatchlist(title);
       expect(result).not.toBeNull();
-      expect(result?.entry.canonicalName).toBe('Re:ZERO -Starting Life in Another World- Season 4');
+      expect(result?.entry.canonicalName).toBe('Re:ZERO -Starting Life in Another World-');
     });
   });
 

@@ -52,10 +52,10 @@ const AIRING_SCHEDULE_QUERY = `
 /**
  * Fetches anime episodes that aired within the given time window.
  *
- * @param windowMinutes - How many minutes back to check (default: 15 mins, 
- *                        so we never miss an episode even if Actions runs slightly late)
+ * @param windowMinutes - How many minutes back to check (default: 1440 mins / 24 hours,
+ *                        so we never miss an episode even if the scheduler runs late)
  */
-export async function fetchAiringSchedule(windowMinutes = 15): Promise<AiringEpisode[]> {
+export async function fetchAiringSchedule(windowMinutes = 1440): Promise<AiringEpisode[]> {
   const nowUnix = Math.floor(Date.now() / 1000); // current time in UTC Unix seconds
   const windowStart = nowUnix - windowMinutes * 60;
 

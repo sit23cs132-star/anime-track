@@ -26,12 +26,12 @@ async function processFeed(): Promise<CronResult> {
   console.log('[Cron] Starting AniList airing schedule check...');
 
   try {
-    // Fetch episodes that aired in the last 15 minutes (UTC)
-    // 15 minutes ensures we never miss episodes even if GitHub Actions fires slightly late
-    const airingEpisodes = await fetchAiringSchedule(15);
+    // Fetch episodes that aired in the last 24 hours (1440 minutes) (UTC)
+    // Checking a 24-hour window ensures we never miss episodes even if GitHub Actions triggers late
+    const airingEpisodes = await fetchAiringSchedule(1440);
     result.checked = airingEpisodes.length;
 
-    console.log(`[Cron] Found ${airingEpisodes.length} episode(s) that aired in the last 15 minutes`);
+    console.log(`[Cron] Found ${airingEpisodes.length} episode(s) that aired in the last 24 hours`);
 
     if (airingEpisodes.length === 0) {
       console.log('[Cron] No new episodes found in window. Exiting.');
