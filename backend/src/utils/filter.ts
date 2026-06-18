@@ -22,6 +22,7 @@ export function normalizeString(input: string): string {
 export interface WatchlistEntry {
   canonicalName: string;
   searchTerms: string[];
+  termOffsets?: Record<string, number>;
 }
 
 export const WATCHLIST: WatchlistEntry[] = [
@@ -71,13 +72,27 @@ export const WATCHLIST: WatchlistEntry[] = [
   {
     canonicalName: 'Dr. Stone Season 4',
     searchTerms: [
-      // AniList titles
-      'dr stone',
+      // AniList titles (specific first for correct offset matching)
+      'dr stone science future cour 3',
+      'dr stone science future part 3',
+      'dr stone science future 3クール',
+      'dr stone science future cour 2',
+      'dr stone science future part 2',
+      'dr stone science future 2クール',
       'dr stone science future',
+      'dr stone',
       'doctor stone',
       'dr stone s4',
       'dr stone season 4',
     ],
+    termOffsets: {
+      'dr stone science future cour 3': 24,
+      'dr stone science future part 3': 24,
+      'dr stone science future 3クール': 24,
+      'dr stone science future cour 2': 12,
+      'dr stone science future part 2': 12,
+      'dr stone science future 2クール': 12,
+    },
   },
 ];
 
@@ -162,7 +177,7 @@ export function matchAgainstWatchlist(title: string): { entry: WatchlistEntry; e
  */
 export function matchAiringSchedule(
   episode: AiringEpisode
-): { entry: WatchlistEntry } | null {
+): { entry: WatchlistEntry; episodeNumber: number } | null {
   // Build list of all titles to check from AniList response
   const titlesToCheck = [
     episode.titleEnglish,
@@ -179,7 +194,11 @@ export function matchAiringSchedule(
           console.log(
             `[Filter] Matched "${entry.canonicalName}" via AniList title "${title}" using search term "${term}"`
           );
-          return { entry };
+          const offset = entry.termOffsets?.[term] || 0;
+          return { 
+            entry, 
+            episodeNumber: episode.episode + offset 
+          };
         }
       }
     }

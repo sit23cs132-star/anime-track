@@ -57,8 +57,7 @@ async function processFeed(): Promise<CronResult> {
       }
 
       result.matched++;
-      const { entry } = match;
-      const episodeNumber = episode.episode;
+      const { entry, episodeNumber } = match;
       const episodeKeyHash = generateEpisodeKeyHash(entry.canonicalName, episodeNumber);
 
       // Convert UTC airing time to IST for logging
