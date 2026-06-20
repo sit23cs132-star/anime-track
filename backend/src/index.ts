@@ -125,8 +125,13 @@ async function processFeed(): Promise<CronResult> {
 
 // Vercel/Netlify/Serverless handler
 export default async function handler(req: any, res: any) {
-  // Optional: Verify cron secret
-  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  // Verify cron secret (handles standard Vercel Cron header, custom header, or query param)
+  const authHeader = req.headers['authorization'];
+  const cronSecret =
+    req.headers['x-cron-secret'] ||
+    req.query.secret ||
+    (authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : undefined);
+
   const expectedSecret = process.env.CRON_SECRET;
 
   if (expectedSecret && cronSecret !== expectedSecret) {
