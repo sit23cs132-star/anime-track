@@ -6,24 +6,30 @@ A production-grade system for monitoring anime releases and sending real-time pu
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│ AniList API │────▶│  Backend     │────▶│  Expo Push  │
-│  (GraphQL)  │     │ (GitHub Act) │     │   Service   │
+│ AniList API │────▶│   Backend    │────▶│  Expo Push  │
+│  (GraphQL)  │     │ (Vercel API) │     │   Service   │
 └─────────────┘     └──────┬───────┘     └──────┬──────┘
                            │                    │
                     ┌──────▼───────┐     ┌──────▼──────┐
                     │  Supabase    │     │  Mobile App │
                     │  (PostgreSQL)│     │  (React     │
                     └──────────────┘     │   Native)   │
-                                         └─────────────┘
+                           ▲             └─────────────┘
+                           │
+                    ┌──────┴───────┐
+                    │ cron-job.org │
+                    │ (5-Min Cron) │
+                    └──────────────┘
 ```
 
 ## Components
 
 ### Backend (`/backend`)
-- **Node.js + TypeScript**
-- Triggered automatically every 5 minutes via **GitHub Actions** (`cron.yml`)
+- **Node.js + TypeScript (Vercel Serverless)**
+- Hosted as a serverless function (`/api/check-feed`) on Vercel
+- Triggered automatically every 5 minutes via an external cron service (**cron-job.org**)
 - Queries the **AniList GraphQL Airing Schedule API**
-- Fetches all anime airing within a rolling 15-minute window (ensures no releases are missed if GitHub Actions experiences run delays)
+- Fetches all anime airing within a rolling 24-hour window (ensures no releases are missed even if there are minor trigger delays)
 - Matches releases against the watchlist by performing checks on English, Romaji, and Japanese titles
 - Delivers push notifications globally using **Expo's Push Notification Service** (`exp.host`)
 - Saves episode logs and numbers to **Supabase** for front-end synchronization
@@ -71,13 +77,28 @@ eas init
 eas build --platform android --profile preview
 ```
 
-### 3. Backend Workflow Setup
-GitHub Actions handles all automated schedule parsing and notification delivery. Add the following repository secrets to your GitHub project:
+### 3. Vercel Backend & Cron Setup
+The backend runs as a Serverless Function on **Vercel** and is triggered by **cron-job.org**.
 
-- `SUPABASE_URL`: Your Supabase Project API endpoint
-- `SUPABASE_SERVICE_ROLE_KEY`: Service role API key (bypasses RLS for backend write access)
+#### A. Deploy to Vercel
+1. Sign in to your Vercel account and import your repository.
+2. In the project setup, click **Edit** next to **Root Directory** and set it to `backend`.
+3. Set the **Framework Preset** to **Other**.
+4. Under **Build & Development Settings**, toggle **Build Command** override to **ON** and leave it completely **empty/blank**.
+5. Add the following **Environment Variables**:
+   - `SUPABASE_URL`: Your Supabase Project API endpoint.
+   - `SUPABASE_SERVICE_ROLE_KEY`: Your service role API key.
+   - `CRON_SECRET`: A secure random secret key to protect your API from unauthorized trigger requests.
+6. Click **Deploy**.
 
-Once secrets are set, the workflow at `.github/workflows/cron.yml` executes every 5 minutes, checking AniList, comparing titles, and dispatching pushes automatically! 🚀
+#### B. Setup Cron Job Trigger
+1. Go to [cron-job.org](https://cron-job.org/) and create a free account.
+2. Click **Create Cronjob**.
+3. Set the **URL** to: `https://<your-vercel-domain>.vercel.app/api/check-feed?secret=<YOUR_CRON_SECRET>`
+4. Set the **Schedule** to **Every 5 minutes** (or custom interval).
+5. Click **Create**.
+
+Your backend is now fully active, checked every 5 minutes, and will securely dispatch notifications! 🚀
 
 ---
 
