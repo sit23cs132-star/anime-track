@@ -1,6 +1,6 @@
 import 'dotenv/config';
-import { fetchAiringSchedule } from './services/anilist';
-import { matchAiringSchedule, generateEpisodeKeyHash } from './utils/filter';
+import { fetchAnimeFeed } from './services/rss';
+import { matchAgainstWatchlist, generateEpisodeKeyHash } from './utils/filter';
 import {
   getActiveDeviceTokens,
   hasEpisodeBeenNotified,
@@ -23,18 +23,16 @@ async function processFeed(): Promise<CronResult> {
     errors: [],
   };
 
-  console.log('[Cron] Starting AniList airing schedule check...');
+  console.log('[Cron] Starting SubsPlease RSS airing schedule check...');
 
   try {
-    // Fetch episodes that aired in the last 24 hours (1440 minutes) (UTC)
-    // Checking a 24-hour window ensures we never miss episodes even if GitHub Actions triggers late
-    const airingEpisodes = await fetchAiringSchedule(1440);
-    result.checked = airingEpisodes.length;
+    const rssItems = await fetchAnimeFeed();
+    result.checked = rssItems.length;
 
-    console.log(`[Cron] Found ${airingEpisodes.length} episode(s) that aired in the last 24 hours`);
+    console.log(`[Cron] Found ${rssItems.length} item(s) in the RSS feed`);
 
-    if (airingEpisodes.length === 0) {
-      console.log('[Cron] No new episodes found in window. Exiting.');
+    if (rssItems.length === 0) {
+      console.log('[Cron] No items found in RSS feed. Exiting.');
       return result;
     }
 
@@ -46,13 +44,11 @@ async function processFeed(): Promise<CronResult> {
       return result;
     }
 
-    for (const episode of airingEpisodes) {
-      const match = matchAiringSchedule(episode);
+    for (const item of rssItems) {
+      const match = matchAgainstWatchlist(item.title);
 
       if (!match) {
-        console.log(
-          `[Cron] No watchlist match for: "${episode.titleEnglish || episode.titleRomaji}" Ep ${episode.episode}`
-        );
+        console.log(`[Cron] No watchlist match for RSS item: "${item.title}"`);
         continue;
       }
 
@@ -60,8 +56,9 @@ async function processFeed(): Promise<CronResult> {
       const { entry, episodeNumber } = match;
       const episodeKeyHash = generateEpisodeKeyHash(entry.canonicalName, episodeNumber);
 
-      // Convert UTC airing time to IST for logging
-      const airedAtIST = new Date(episode.airingAt * 1000).toLocaleString('en-IN', {
+      // Parse release publication date for logging (defaulting to current time if missing)
+      const pubDate = item.pubDate ? new Date(item.pubDate) : new Date();
+      const releasedAtIST = pubDate.toLocaleString('en-IN', {
         timeZone: 'Asia/Kolkata',
         hour: '2-digit',
         minute: '2-digit',
@@ -70,7 +67,7 @@ async function processFeed(): Promise<CronResult> {
 
       console.log(
         `[Cron] Match: "${entry.canonicalName}" - Ep ${episodeNumber} ` +
-        `(aired at ${airedAtIST} IST)`
+        `(published at ${releasedAtIST} IST)`
       );
 
       // Check if already notified
@@ -87,8 +84,8 @@ async function processFeed(): Promise<CronResult> {
         data: {
           anime: entry.canonicalName,
           episode: episodeNumber.toString(),
-          airedAt: new Date(episode.airingAt * 1000).toISOString(),
-          source: 'anilist',
+          airedAt: pubDate.toISOString(),
+          source: 'subsplease',
         },
       };
 

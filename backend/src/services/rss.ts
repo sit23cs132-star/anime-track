@@ -1,7 +1,7 @@
 import Parser from 'rss-parser';
 
 const RSS_FEED_URL = process.env.RSS_FEED_URL || 
-  'https://raw.githubusercontent.com/ArjixGamer/gogoanime-rss/main/animepahe/animepahe-rss.xml';
+  'https://subsplease.org/rss/?r=1080';
 
 const parser = new Parser();
 
