@@ -10,17 +10,17 @@
     "test": "jest"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.0",
+    "@supabase/supabase-js": "^2.108.2",
     "dotenv": "^16.3.1",
-    "firebase-admin": "^12.0.0",
+    "firebase-admin": "^14.0.0",
     "rss-parser": "^3.13.0"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.0",
-    "@types/node": "^20.10.0",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^20.19.43",
     "@vercel/node": "^5.8.17",
     "jest": "^29.7.0",
-    "ts-node": "^10.9.0",
-    "typescript": "^5.3.0"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }
