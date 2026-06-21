@@ -23,7 +23,6 @@ export interface WatchlistEntry {
   canonicalName: string;
   searchTerms: string[];
   termOffsets?: Record<string, number>;
-  delayHours?: number; // Delay in hours before sending the notification
 }
 
 export const WATCHLIST: WatchlistEntry[] = [
@@ -69,7 +68,6 @@ export const WATCHLIST: WatchlistEntry[] = [
     searchTerms: [
       'one piece',
     ],
-    delayHours: 15.5, // 15 hours and 30 minutes delay (so it triggers at 9:30 PM IST)
   },
   {
     canonicalName: 'Dr. Stone Season 4',
