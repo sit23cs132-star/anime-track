@@ -58,6 +58,32 @@ async function processFeed(): Promise<CronResult> {
 
       result.matched++;
       const { entry, episodeNumber } = match;
+
+      // Check if there is an airing delay set and if it has elapsed
+      if (entry.delayHours && entry.delayHours > 0) {
+        const nowUnix = Math.floor(Date.now() / 1000);
+        const scheduledTime = episode.airingAt + entry.delayHours * 3600;
+        if (nowUnix < scheduledTime) {
+          const scheduledTimeIST = new Date(scheduledTime * 1000).toLocaleString('en-IN', {
+            timeZone: 'Asia/Kolkata',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+          });
+          const currentIST = new Date().toLocaleTimeString('en-IN', {
+            timeZone: 'Asia/Kolkata',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+          });
+          console.log(
+            `[Cron] Match: "${entry.canonicalName}" Ep ${episodeNumber} is delayed. ` +
+            `Will notify after ${scheduledTimeIST} IST (Current: ${currentIST} IST)`
+          );
+          continue;
+        }
+      }
+
       const episodeKeyHash = generateEpisodeKeyHash(entry.canonicalName, episodeNumber);
 
       // Convert UTC airing time to IST for logging
