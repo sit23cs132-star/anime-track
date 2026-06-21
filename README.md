@@ -6,8 +6,8 @@ A production-grade system for monitoring anime releases and sending real-time pu
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│ AniList API │────▶│   Backend    │────▶│  Expo Push  │
-│  (GraphQL)  │     │ (Vercel API) │     │   Service   │
+│ SubsPlease  │────▶│   Backend    │────▶│  Expo Push  │
+│ (RSS Feed)  │     │ (Vercel API) │     │   Service   │
 └─────────────┘     └──────┬───────┘     └──────┬──────┘
                            │                    │
                     ┌──────▼───────┐     ┌──────▼──────┐
@@ -28,9 +28,9 @@ A production-grade system for monitoring anime releases and sending real-time pu
 - **Node.js + TypeScript (Vercel Serverless)**
 - Hosted as a serverless function (`/api/check-feed`) on Vercel
 - Triggered automatically every 5 minutes via an external cron service (**cron-job.org**)
-- Queries the **AniList GraphQL Airing Schedule API**
-- Fetches all anime airing within a rolling 24-hour window (ensures no releases are missed even if there are minor trigger delays)
-- Matches releases against the watchlist by performing checks on English, Romaji, and Japanese titles
+- Queries the **SubsPlease RSS Feed** (configured for 1080p release stream)
+- Fetches new releases dynamically as soon as English-subtitled download files are published in India
+- Matches release titles against the watchlist using regular expressions to extract episode numbers and match title variations
 - Delivers push notifications globally using **Expo's Push Notification Service** (`exp.host`)
 - Saves episode logs and numbers to **Supabase** for front-end synchronization
 
@@ -89,6 +89,7 @@ The backend runs as a Serverless Function on **Vercel** and is triggered by **cr
    - `SUPABASE_URL`: Your Supabase Project API endpoint.
    - `SUPABASE_SERVICE_ROLE_KEY`: Your service role API key.
    - `CRON_SECRET`: A secure random secret key to protect your API from unauthorized trigger requests.
+   - `RSS_FEED_URL` (optional): Set to a custom SubsPlease feed URL (defaults to 1080p).
 6. Click **Deploy**.
 
 #### B. Setup Cron Job Trigger
