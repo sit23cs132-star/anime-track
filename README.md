@@ -53,12 +53,7 @@ A production-grade system for monitoring anime releases and sending real-time pu
 
 ## Watchlist & Matching Aliases
 
-The watchlist is fully dynamic and managed directly from the mobile app's search bar. It is pre-seeded with:
-1. **Classroom of the Elite Season 4**
-2. **Re:ZERO -Starting Life in Another World-**
-3. **Witch Hat Atelier**
-4. **One Piece**
-5. **Dr. Stone Season 4**
+The watchlist is completely dynamic and managed directly from the mobile app. You can search for any anime using the integrated AniList API search bar and start tracking it instantly.
 
 *All search terms and aliases for SubsPlease release matching are computed automatically and stored in Supabase when you add an anime from the mobile search bar.*
 
