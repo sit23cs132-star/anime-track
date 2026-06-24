@@ -30,8 +30,8 @@ A production-grade system for monitoring anime releases and sending real-time pu
 - Triggered automatically every 5 minutes via an external cron service (**cron-job.org**)
 - Queries the **SubsPlease RSS Feed** (configured for 1080p release stream)
 - Fetches new releases dynamically as soon as English-subtitled download files are published in India
-- Matches release titles against the watchlist using regular expressions to extract episode numbers and match title variations
-- Delivers push notifications globally using **Expo's Push Notification Service** (`exp.host`)
+- Matches release titles against the **dynamic watchlist loaded from Supabase**
+- Delivers **rich push notifications** containing cover art (`imageUrl` / attachments) and deep-linking streaming URLs using **Expo's Push Notification Service** (`exp.host`)
 - Saves episode logs and numbers to **Supabase** for front-end synchronization
 
 ### Mobile (`/mobile`)
@@ -39,21 +39,28 @@ A production-grade system for monitoring anime releases and sending real-time pu
 - **Expo Router** for page routing
 - Midnight-dark custom theme with purple accent
 - **expo-notifications** client integration to register device tokens
-- Dynamic database synchronization: queries Supabase on launch to pull exact latest episode numbers and highlight newly released episodes (released within last 24 hours)
+- **Dynamic Watchlist Management**: Live AniList API search bar to add and remove shows directly from your phone
+- **Live Countdown Timers**: Automatically tracks and displays live countdowns (e.g. `Airs in 3h 12m`) for scheduled releases
+- **Direct Streaming Integration**: "Watch Stream" buttons on dashboard cards and tap handlers on notifications that open stream episodes directly on `animepahe.pw`
+- **Episode Checklist Tracker**: In-app `+` / `-` progress controls to log watched episodes to Supabase
+- **Analytics Dashboard**: Dynamic calculations of total tracked shows, total watched episodes, total watch time (scaled at 24 minutes per episode), and favorite genres progress bars
 
 ### Database (`/supabase`)
 - `device_tokens` - Registered Expo Push tokens per device
-- `episodes_notified` - State tracking table to guarantee zero duplicate notification delivery (stores `episode_number` to feed the client dashboard)
+- `episodes_notified` - State tracking table to guarantee zero duplicate notification delivery
+- `watchlist` - Dynamic list of tracked anime, their search aliases, genres, and cover art URLs
+- `watched_episodes` - Watched progress logging table for analytics computations
 
 ## Watchlist & Matching Aliases
 
-| Anime | Search Terms Checked |
-|---|---|
-| **Classroom of the Elite Season 4** | `classroom of the elite season 4`, `classroom of the elite 4th season`, `youkoso jitsuryoku shijou shugi no kyoushitsu e 4th season`, `youkoso jitsuryoku shijou shugi no kyoushitsu e s4`, `classroom of the elite s4`, `youkoso jitsuryoku 4th`, `youkoso jitsuryoku s4` |
-| **Re:ZERO -Starting Life in Another World-** | `re zero starting life in another world`, `re zero kara hajimeru isekai seikatsu`, `re zero season 3`, `re zero season 4`, `re zero 3rd season`, `re zero 4th season` |
-| **Witch Hat Atelier** | `witch hat atelier`, `tongari boushi no atelier`, `tongari boshi no atelier` |
-| **One Piece** | `one piece` |
-| **Dr. Stone Season 4** | `dr stone`, `dr stone science future`, `doctor stone`, `dr stone s4`, `dr stone season 4` |
+The watchlist is fully dynamic and managed directly from the mobile app's search bar. It is pre-seeded with:
+1. **Classroom of the Elite Season 4**
+2. **Re:ZERO -Starting Life in Another World-**
+3. **Witch Hat Atelier**
+4. **One Piece**
+5. **Dr. Stone Season 4**
+
+*All search terms and aliases for SubsPlease release matching are computed automatically and stored in Supabase when you add an anime from the mobile search bar.*
 
 ---
 
