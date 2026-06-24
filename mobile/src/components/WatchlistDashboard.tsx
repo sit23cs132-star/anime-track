@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, 
   Text, 
@@ -53,6 +53,9 @@ export function WatchlistDashboard({ supabase }: WatchlistDashboardProps) {
   // Slug edit modal state
   const [editingItem, setEditingItem] = useState<WatchlistItemProps | null>(null);
   const [newSlugText, setNewSlugText] = useState('');
+  
+  // Search debouncing ref
+  const searchTimeoutRef = useRef<any>(null);
 
   // Fetch watchlist data
   const fetchWatchlistData = async () => {
@@ -164,54 +167,63 @@ export function WatchlistDashboard({ supabase }: WatchlistDashboardProps) {
     return () => clearInterval(interval);
   }, [supabase]);
 
-  // Handle Search input
-  const handleSearch = async (text: string) => {
+  // Handle Search input with 500ms debouncing
+  const handleSearch = (text: string) => {
     setSearchQuery(text);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
     if (text.trim().length < 3) {
       setSearchResults([]);
+      setSearching(false);
       return;
     }
 
     setSearching(true);
-    try {
-      const query = `
-        query ($search: String) {
-          Page(page: 1, perPage: 6) {
-            media(search: $search, type: ANIME, status_in: [RELEASING, NOT_YET_RELEASED]) {
-              id
-              title {
-                english
-                romaji
-                native
-              }
-              coverImage {
-                large
-              }
-              genres
-              nextAiringEpisode {
-                airingAt
-                episode
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const query = `
+          query ($search: String) {
+            Page(page: 1, perPage: 6) {
+              media(search: $search, type: ANIME) {
+                id
+                title {
+                  english
+                  romaji
+                  native
+                }
+                coverImage {
+                  large
+                }
+                genres
+                nextAiringEpisode {
+                  airingAt
+                  episode
+                }
               }
             }
           }
+        `;
+
+        const response = await fetch('https://graphql.anilist.co', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, variables: { search: text } })
+        });
+
+        if (response.ok) {
+          const json = (await response.json()) as any;
+          setSearchResults(json?.data?.Page?.media || []);
         }
-      `;
-
-      const response = await fetch('https://graphql.anilist.co', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query, variables: { search: text } })
-      });
-
-      if (response.ok) {
-        const json = (await response.json()) as any;
-        setSearchResults(json?.data?.Page?.media || []);
+      } catch (err) {
+        console.error('AniList search failed:', err);
+      } finally {
+        setSearching(false);
       }
-    } catch (err) {
-      console.error('AniList search failed:', err);
-    } finally {
-      setSearching(false);
-    }
+    }, 500);
   };
 
   // Helper to generate a URL-friendly slug
