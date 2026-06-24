@@ -57,6 +57,9 @@ export function WatchlistDashboard({ supabase }: WatchlistDashboardProps) {
   // Search debouncing ref
   const searchTimeoutRef = useRef<any>(null);
 
+  // Episode progress editing state
+  const [editingProgress, setEditingProgress] = useState<Record<string, string>>({});
+
   // Fetch watchlist data
   const fetchWatchlistData = async () => {
     try {
@@ -368,6 +371,43 @@ export function WatchlistDashboard({ supabase }: WatchlistDashboardProps) {
     }
   };
 
+  const handleSetProgress = async (itemId: string, newProgress: number, currentProgress: number) => {
+    if (isNaN(newProgress) || newProgress < 0 || newProgress > 5000) return;
+    if (newProgress === currentProgress) return;
+
+    try {
+      if (newProgress > currentProgress) {
+        // Bulk insert episodes from currentProgress + 1 up to newProgress
+        const inserts = [];
+        for (let ep = currentProgress + 1; ep <= newProgress; ep++) {
+          inserts.push({
+            watchlist_id: itemId,
+            episode_number: ep
+          });
+        }
+        
+        const { error } = await supabase
+          .from('watched_episodes')
+          .insert(inserts);
+
+        if (error && error.code !== '23505') throw error;
+      } else {
+        // Delete episodes above newProgress
+        const { error } = await supabase
+          .from('watched_episodes')
+          .delete()
+          .eq('watchlist_id', itemId)
+          .gt('episode_number', newProgress);
+
+        if (error) throw error;
+      }
+      
+      fetchWatchlistData();
+    } catch (err) {
+      console.error('Failed to set progress:', err);
+    }
+  };
+
   // Edit slug triggers
   const handleStartEditSlug = (item: WatchlistItemProps) => {
     setEditingItem(item);
@@ -605,7 +645,28 @@ export function WatchlistDashboard({ supabase }: WatchlistDashboardProps) {
                       >
                         <Text style={styles.progressBtnText}>-</Text>
                       </TouchableOpacity>
-                      <Text style={styles.progressText}>Ep {progress}</Text>
+                      <View style={styles.progressInputWrapper}>
+                        <Text style={styles.progressTextPrefix}>Ep</Text>
+                        <TextInput
+                          style={styles.progressTextInput}
+                          keyboardType="numeric"
+                          value={editingProgress[item.id] !== undefined ? editingProgress[item.id] : progress.toString()}
+                          onChangeText={(val) => setEditingProgress(prev => ({ ...prev, [item.id]: val }))}
+                          onEndEditing={() => {
+                            const val = parseInt(editingProgress[item.id]);
+                            if (!isNaN(val)) {
+                              handleSetProgress(item.id, val, progress);
+                            }
+                            setEditingProgress(prev => {
+                              const next = { ...prev };
+                              delete next[item.id];
+                              return next;
+                            });
+                          }}
+                          selectTextOnFocus={true}
+                          returnKeyType="done"
+                        />
+                      </View>
                       <TouchableOpacity 
                         style={styles.progressBtn}
                         onPress={() => handleIncrementProgress(item.id, progress)}
@@ -992,11 +1053,31 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  progressText: {
+  progressInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1a1a2e',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: '#22223b',
+  },
+  progressTextPrefix: {
+    color: '#8888a0',
+    fontSize: 11,
+    fontWeight: '600',
+    fontFamily: 'monospace',
+    marginRight: 2,
+  },
+  progressTextInput: {
     color: '#ffffff',
     fontSize: 12,
     fontWeight: '700',
     fontFamily: 'monospace',
+    width: 32,
+    textAlign: 'center',
+    padding: 0,
   },
   actionsRow: {
     flexDirection: 'row',
