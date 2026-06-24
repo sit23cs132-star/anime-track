@@ -42,7 +42,7 @@ A production-grade system for monitoring anime releases and sending real-time pu
 - **Dynamic Watchlist Management**: Live AniList API search bar to add and remove shows directly from your phone
 - **Live Countdown Timers**: Automatically tracks and displays live countdowns (e.g. `Airs in 3h 12m`) for scheduled releases
 - **Direct Streaming Integration**: "Watch Stream" buttons on dashboard cards and tap handlers on notifications that open stream episodes directly on `animepahe.pw`
-- **Episode Checklist Tracker**: In-app `+` / `-` progress controls to log watched episodes to Supabase
+- **Episode Progress Tracker**: In-app `+` / `-` controls and direct text input fields to quickly log or manually type custom watched episode numbers, syncing instantly with Supabase
 - **Analytics Dashboard**: Dynamic calculations of total tracked shows, total watched episodes, total watch time (scaled at 24 minutes per episode), and favorite genres progress bars
 
 ### Database (`/supabase`)
