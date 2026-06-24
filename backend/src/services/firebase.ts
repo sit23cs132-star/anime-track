@@ -6,6 +6,7 @@ export interface NotificationPayload {
   title: string;
   body: string;
   data?: Record<string, string>;
+  imageUrl?: string;
 }
 
 interface ExpoPushMessage {
@@ -17,6 +18,9 @@ interface ExpoPushMessage {
   priority?: 'high' | 'normal' | 'default';
   channelId?: string;
   badge?: number;
+  imageUrl?: string;
+  attachments?: { url: string }[];
+  mutableContent?: boolean;
 }
 
 interface ExpoPushTicket {
@@ -64,6 +68,9 @@ export async function sendPushNotification(
       priority: 'high',
       channelId: 'anime-releases',
       badge: 1,
+      imageUrl: payload.imageUrl,
+      attachments: payload.imageUrl ? [{ url: payload.imageUrl }] : undefined,
+      mutableContent: payload.imageUrl ? true : undefined,
     }));
 
     try {

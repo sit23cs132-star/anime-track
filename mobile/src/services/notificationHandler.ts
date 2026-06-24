@@ -1,6 +1,7 @@
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import * as Linking from 'expo-linking';
 import { registerDeviceToken } from './supabase';
 import { useSupabase } from './supabase';
 
@@ -111,6 +112,13 @@ export function useNotificationListener(
 
   const responseListener = Notifications.addNotificationResponseReceivedListener((response: any) => {
     console.log('Notification response:', response);
+    const data = response?.notification?.request?.content?.data;
+    if (data?.watchUrl) {
+      console.log('Opening streaming URL from notification tap:', data.watchUrl);
+      Linking.openURL(data.watchUrl).catch((err) => {
+        console.error('Failed to open watchUrl:', err);
+      });
+    }
   });
 
   return () => {

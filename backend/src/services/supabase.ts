@@ -82,3 +82,29 @@ export async function registerDeviceToken(token: string, platform: 'ios' | 'andr
     throw error;
   }
 }
+
+export interface WatchlistRow {
+  id: string;
+  canonical_name: string;
+  search_terms: string[];
+  animepahe_slug?: string;
+  image_url?: string;
+  anilist_id?: number;
+  genres: string[];
+  next_airing_episode?: number;
+  airing_at?: string;
+  created_at?: string;
+}
+
+export async function getWatchlist(): Promise<WatchlistRow[]> {
+  const { data, error } = await supabase
+    .from('watchlist')
+    .select('*');
+
+  if (error) {
+    console.error('Error fetching watchlist from Supabase:', error);
+    throw error;
+  }
+
+  return data || [];
+}

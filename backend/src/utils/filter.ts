@@ -23,6 +23,8 @@ export interface WatchlistEntry {
   canonicalName: string;
   searchTerms: string[];
   termOffsets?: Record<string, number>;
+  animepaheSlug?: string;
+  imageUrl?: string;
 }
 
 export const WATCHLIST: WatchlistEntry[] = [
@@ -150,7 +152,10 @@ export function extractEpisodeNumber(title: string): number | null {
  * Matches an RSS item title against the watchlist.
  * Returns the matched watchlist entry and episode number if found.
  */
-export function matchAgainstWatchlist(title: string): { entry: WatchlistEntry; episodeNumber: number } | null {
+export function matchAgainstWatchlist(
+  title: string,
+  watchlist: WatchlistEntry[] = WATCHLIST
+): { entry: WatchlistEntry; episodeNumber: number } | null {
   const normalizedTitle = normalizeString(title);
   const episodeNumber = extractEpisodeNumber(title);
 
@@ -158,7 +163,7 @@ export function matchAgainstWatchlist(title: string): { entry: WatchlistEntry; e
     return null;
   }
 
-  for (const entry of WATCHLIST) {
+  for (const entry of watchlist) {
     for (const term of entry.searchTerms) {
       const normalizedTerm = normalizeString(term);
       if (normalizedTitle.includes(normalizedTerm)) {
@@ -176,7 +181,8 @@ export function matchAgainstWatchlist(title: string): { entry: WatchlistEntry; e
  * Returns the matched watchlist entry if found.
  */
 export function matchAiringSchedule(
-  episode: AiringEpisode
+  episode: AiringEpisode,
+  watchlist: WatchlistEntry[] = WATCHLIST
 ): { entry: WatchlistEntry; episodeNumber: number } | null {
   // Build list of all titles to check from AniList response
   const titlesToCheck = [
@@ -185,7 +191,7 @@ export function matchAiringSchedule(
     episode.titleNative,
   ].filter(Boolean);
 
-  for (const entry of WATCHLIST) {
+  for (const entry of watchlist) {
     for (const term of entry.searchTerms) {
       const normalizedTerm = normalizeString(term);
       for (const title of titlesToCheck) {

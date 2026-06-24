@@ -1,10 +1,11 @@
 import 'dotenv/config';
 import { fetchAnimeFeed } from './services/rss';
-import { matchAgainstWatchlist, generateEpisodeKeyHash } from './utils/filter';
+import { matchAgainstWatchlist, generateEpisodeKeyHash, WatchlistEntry } from './utils/filter';
 import {
   getActiveDeviceTokens,
   hasEpisodeBeenNotified,
-  markEpisodeAsNotified
+  markEpisodeAsNotified,
+  getWatchlist
 } from './services/supabase';
 import { sendPushNotification } from './services/firebase';
 
@@ -36,6 +37,14 @@ async function processFeed(): Promise<CronResult> {
       return result;
     }
 
+    const watchlistRows = await getWatchlist();
+    const watchlist: WatchlistEntry[] = watchlistRows.map(row => ({
+      canonicalName: row.canonical_name,
+      searchTerms: row.search_terms && row.search_terms.length > 0 ? row.search_terms : [row.canonical_name],
+      animepaheSlug: row.animepahe_slug || undefined,
+      imageUrl: row.image_url || undefined,
+    }));
+
     const deviceTokens = await getActiveDeviceTokens();
     console.log(`[Cron] Found ${deviceTokens.length} registered device(s)`);
 
@@ -45,7 +54,7 @@ async function processFeed(): Promise<CronResult> {
     }
 
     for (const item of rssItems) {
-      const match = matchAgainstWatchlist(item.title);
+      const match = matchAgainstWatchlist(item.title, watchlist);
 
       if (!match) {
         console.log(`[Cron] No watchlist match for RSS item: "${item.title}"`);
@@ -77,15 +86,22 @@ async function processFeed(): Promise<CronResult> {
         continue;
       }
 
+      // Determine stream URL (default to search on animepahe if no slug)
+      const streamUrl = entry.animepaheSlug 
+        ? `https://animepahe.pw/anime/${entry.animepaheSlug}`
+        : `https://animepahe.pw/play?q=${encodeURIComponent(entry.canonicalName)}`;
+
       // Build notification payload
       const payload = {
         title: `🎬 ${entry.canonicalName}`,
         body: `Episode ${episodeNumber} is now streaming! Watch it now.`,
+        imageUrl: entry.imageUrl,
         data: {
           anime: entry.canonicalName,
           episode: episodeNumber.toString(),
           airedAt: pubDate.toISOString(),
           source: 'subsplease',
+          watchUrl: streamUrl,
         },
       };
 
