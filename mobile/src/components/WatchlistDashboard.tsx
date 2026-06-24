@@ -194,7 +194,7 @@ export function WatchlistDashboard({ supabase }: WatchlistDashboardProps) {
         const query = `
           query ($search: String) {
             Page(page: 1, perPage: 6) {
-              media(search: $search, type: ANIME) {
+              media(search: $search, type: ANIME, sort: POPULARITY_DESC) {
                 id
                 title {
                   english
@@ -205,10 +205,6 @@ export function WatchlistDashboard({ supabase }: WatchlistDashboardProps) {
                   large
                 }
                 genres
-                nextAiringEpisode {
-                  airingAt
-                  episode
-                }
               }
             }
           }
