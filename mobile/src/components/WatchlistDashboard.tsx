@@ -170,7 +170,7 @@ export function WatchlistDashboard({ supabase }: WatchlistDashboardProps) {
     return () => clearInterval(interval);
   }, [supabase]);
 
-  // Handle Search input with 500ms debouncing
+  // Handle Search input with 300ms debouncing (instant feeling)
   const handleSearch = (text: string) => {
     setSearchQuery(text);
 
@@ -178,8 +178,10 @@ export function WatchlistDashboard({ supabase }: WatchlistDashboardProps) {
       clearTimeout(searchTimeoutRef.current);
     }
 
+    // Clear stale search results immediately to prevent flashing old data
+    setSearchResults([]);
+
     if (text.trim().length < 3) {
-      setSearchResults([]);
       setSearching(false);
       return;
     }
@@ -226,7 +228,7 @@ export function WatchlistDashboard({ supabase }: WatchlistDashboardProps) {
       } finally {
         setSearching(false);
       }
-    }, 500);
+    }, 300);
   };
 
   // Helper to generate a URL-friendly slug
@@ -340,15 +342,21 @@ export function WatchlistDashboard({ supabase }: WatchlistDashboardProps) {
 
   const handleIncrementProgress = async (itemId: string, current: number) => {
     const nextEp = current + 1;
+    
+    // Optimistic Update
+    const tempEpisode = { watchlist_id: itemId, episode_number: nextEp };
+    setWatchedEpisodes(prev => [...prev, tempEpisode]);
+
     try {
       const { error } = await supabase
         .from('watched_episodes')
-        .insert({
-          watchlist_id: itemId,
-          episode_number: nextEp
-        });
+        .insert(tempEpisode);
 
-      if (error && error.code !== '23505') throw error;
+      if (error) {
+        // Rollback
+        setWatchedEpisodes(prev => prev.filter(we => !(we.watchlist_id === itemId && we.episode_number === nextEp)));
+        if (error.code !== '23505') throw error;
+      }
       fetchWatchlistData();
     } catch (err) {
       console.error('Failed to increment progress:', err);
@@ -357,6 +365,10 @@ export function WatchlistDashboard({ supabase }: WatchlistDashboardProps) {
 
   const handleDecrementProgress = async (itemId: string, current: number) => {
     if (current === 0) return;
+
+    // Optimistic Update
+    setWatchedEpisodes(prev => prev.filter(we => !(we.watchlist_id === itemId && we.episode_number === current)));
+
     try {
       const { error } = await supabase
         .from('watched_episodes')
@@ -364,7 +376,12 @@ export function WatchlistDashboard({ supabase }: WatchlistDashboardProps) {
         .eq('watchlist_id', itemId)
         .eq('episode_number', current);
 
-      if (error) throw error;
+      if (error) {
+        // Rollback
+        const tempEpisode = { watchlist_id: itemId, episode_number: current };
+        setWatchedEpisodes(prev => [...prev, tempEpisode]);
+        throw error;
+      }
       fetchWatchlistData();
     } catch (err) {
       console.error('Failed to decrement progress:', err);
@@ -375,31 +392,64 @@ export function WatchlistDashboard({ supabase }: WatchlistDashboardProps) {
     if (isNaN(newProgress) || newProgress < 0 || newProgress > 5000) return;
     if (newProgress === currentProgress) return;
 
+    // Backup current state for rollback
+    const backupWatched = [...watchedEpisodes];
+
+    // Optimistic Update
+    if (newProgress > currentProgress) {
+      const newEps: WatchedEpisode[] = [];
+      const existingEps = watchedEpisodes
+        .filter(we => we.watchlist_id === itemId)
+        .map(we => we.episode_number);
+
+      for (let ep = 1; ep <= newProgress; ep++) {
+        if (!existingEps.includes(ep)) {
+          newEps.push({ watchlist_id: itemId, episode_number: ep });
+        }
+      }
+      setWatchedEpisodes(prev => [...prev, ...newEps]);
+    } else {
+      setWatchedEpisodes(prev => prev.filter(we => !(we.watchlist_id === itemId && we.episode_number > newProgress)));
+    }
+
     try {
       if (newProgress > currentProgress) {
-        // Bulk insert episodes from currentProgress + 1 up to newProgress
+        const existingEps = backupWatched
+          .filter(we => we.watchlist_id === itemId)
+          .map(we => we.episode_number);
+
+        // Filter out items already recorded to prevent primary key violation errors
         const inserts = [];
-        for (let ep = currentProgress + 1; ep <= newProgress; ep++) {
-          inserts.push({
-            watchlist_id: itemId,
-            episode_number: ep
-          });
+        for (let ep = 1; ep <= newProgress; ep++) {
+          if (!existingEps.includes(ep)) {
+            inserts.push({
+              watchlist_id: itemId,
+              episode_number: ep
+            });
+          }
         }
         
-        const { error } = await supabase
-          .from('watched_episodes')
-          .insert(inserts);
+        if (inserts.length > 0) {
+          const { error } = await supabase
+            .from('watched_episodes')
+            .insert(inserts);
 
-        if (error && error.code !== '23505') throw error;
+          if (error) {
+            setWatchedEpisodes(backupWatched);
+            if (error.code !== '23505') throw error;
+          }
+        }
       } else {
-        // Delete episodes above newProgress
         const { error } = await supabase
           .from('watched_episodes')
           .delete()
           .eq('watchlist_id', itemId)
           .gt('episode_number', newProgress);
 
-        if (error) throw error;
+        if (error) {
+          setWatchedEpisodes(backupWatched);
+          throw error;
+        }
       }
       
       fetchWatchlistData();
