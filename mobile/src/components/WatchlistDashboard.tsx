@@ -72,7 +72,8 @@ export function WatchlistDashboard({ supabase }: WatchlistDashboardProps) {
 
       const { data: watchedData, error: wedError } = await supabase
         .from('watched_episodes')
-        .select('watchlist_id, episode_number');
+        .select('watchlist_id, episode_number')
+        .limit(10000);
 
       if (wedError) throw wedError;
 
@@ -702,8 +703,8 @@ export function WatchlistDashboard({ supabase }: WatchlistDashboardProps) {
                           keyboardType="numeric"
                           value={editingProgress[item.id] !== undefined ? editingProgress[item.id] : progress.toString()}
                           onChangeText={(val) => setEditingProgress(prev => ({ ...prev, [item.id]: val }))}
-                          onEndEditing={() => {
-                            const val = parseInt(editingProgress[item.id]);
+                           onEndEditing={(e) => {
+                            const val = parseInt(e.nativeEvent.text);
                             if (!isNaN(val)) {
                               handleSetProgress(item.id, val, progress);
                             }
